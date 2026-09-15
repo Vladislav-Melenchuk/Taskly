@@ -9,8 +9,14 @@ namespace TasklyServer.Data
         public DbSet<ToDoTask> Tasks { get; set; }
         public DbSet<Category> Categories { get; set; }
 
+        public DbSet<User> Users { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<User>()
+                .HasIndex(user => user.Login)
+                .IsUnique();
+
             modelBuilder.Entity<Category>().HasData(
                 new Category
                 {
