@@ -1,0 +1,19 @@
+<header class="header">
+  <h2>Taskly</h2>
+
+  @if (userLogin) {
+    <span class="user-login">
+      {{ userLogin }}
+    </span>
+  } @else {
+    <button class="login-button" routerLink="/login">Войти</button>
+  }
+</header>
+
+<main class="main">
+  <h1>Dashboard</h1>
+  <p>
+    This is the main content area of the application where users can view their dashboard and access
+    various features.
+  </p>
+</main>
