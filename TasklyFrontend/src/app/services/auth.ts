@@ -25,16 +25,20 @@ export interface RegisterResponse {
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'https://localhost:7248/api';
+  private apiUrl = 'https://localhost:7248/api/auth';
   constructor(private http: HttpClient) {
     //https://localhost:7248/api/auth/login
   }
 
   login(data: LoginRequest) {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, data);
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, data);
   }
 
   register(data: RegisterRequest) {
-    return this.http.post<RegisterResponse>(`${this.apiUrl}/auth/register`, data);
+    return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, data);
+  }
+
+  logout() {
+    return this.http.post(`${this.apiUrl}/logout`, {});
   }
 }

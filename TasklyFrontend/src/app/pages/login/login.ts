@@ -49,11 +49,21 @@ export class Login {
     this.authService.register(data).subscribe({
       next: (response) => {
         console.log('Регистрация успешна:', response);
-
-        this.isLogin = true;
-
-        this.login = response.login;
-        this.password = '';
+        this.authService
+          .login({ login: response.login, password: this.registerPassword })
+          .subscribe({
+            next: (loginResponse) => {
+              localStorage.setItem('token', loginResponse.token);
+              localStorage.setItem('login', response.login);
+              this.router.navigate(['/']);
+            },
+            error: (error) => {
+              console.log('Ошибка автоматического входа:', error);
+              this.isLogin = true;
+              this.login = response.login;
+              this.password = '';
+            },
+          });
       },
 
       error: (error) => {

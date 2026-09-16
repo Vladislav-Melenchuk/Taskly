@@ -4,6 +4,32 @@
 
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  min-width: 320px;
+  font-family: Arial, Helvetica, sans-serif;
   color: #222;
+  background: #eef1f4;
 }
+
+button,
+input,
+select {
+  font-family: inherit;
+}
+
+app-home .logout-button img { width: 18px; height: 18px; }
+app-home .add-button { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+app-home .add-button img { width: 19px; filter: invert(1); }
+app-home .close-button img { width: 21px; }
+app-home .category-panel { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 24px; padding: 16px 18px; border: 1px solid #e0e3e7; border-radius: 8px; background: #fff; }
+app-home .category-heading h2 { margin-bottom: 4px; color: #282d33; font-size: 15px; }
+app-home .category-heading p { margin-bottom: 0; color: #747c86; font-size: 12px; }
+app-home .category-form { display: flex; flex: 0 1 390px; gap: 8px; }
+app-home .category-form input { min-width: 0; }
+app-home .category-form .ng-invalid.ng-touched { border-color: #b94a4a; background: #fffafa; }
+
+@media (max-width: 640px) {
+  app-home .category-panel { align-items: stretch; flex-direction: column; gap: 12px; }
+  app-home .category-form { flex-basis: auto; }
+}
+
+@media (max-width: 420px) { app-home .category-form { flex-direction: column; } }

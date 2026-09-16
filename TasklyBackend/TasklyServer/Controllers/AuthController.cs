@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TasklyServer.DTOs;
 using TasklyServer.Interfaces;
 
@@ -47,6 +48,16 @@ namespace TasklyServer.Controllers
             return Ok(new
             {
                 token
+            });
+        }
+
+        [Authorize]
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            return Ok(new
+            {
+                message = "Вихід виконано"
             });
         }
     }

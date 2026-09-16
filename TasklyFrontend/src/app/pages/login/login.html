@@ -1,64 +1,28 @@
-<div class="auth-page">
-  @if (isLogin) {
-    <h1 class="auth-title">Войти</h1>
-
-    <form class="auth-form" (ngSubmit)="onLogin()">
-      <label for="login">Логин</label>
-      <input id="login" type="text" name="login" placeholder="Введите логин" [(ngModel)]="login" />
-
-      <label for="login-password">Пароль</label>
-      <input
-        id="login-password"
-        type="password"
-        name="password"
-        placeholder="Введите пароль"
-        [(ngModel)]="password"
-      />
-
-      <button type="submit">Войти</button>
-    </form>
-
-    <p>
-      Нет аккаунта?
-      <button type="button" class="switch-button" (click)="isLogin = false">Регистрация</button>
-    </p>
-  } @else {
-    <h1 class="auth-title">Регистрация</h1>
-
-    <form class="auth-form" (ngSubmit)="onRegister()">
-      <label for="register-login">Логин</label>
-      <input
-        id="register-login"
-        type="text"
-        name="registerLogin"
-        placeholder="Придумайте логин"
-        [(ngModel)]="registerLogin"
-      />
-
-      <label for="register-password">Пароль</label>
-      <input
-        id="register-password"
-        type="password"
-        name="registerPassword"
-        placeholder="Придумайте пароль"
-        [(ngModel)]="registerPassword"
-      />
-
-      <label for="register-confirm-password"> Подтверждение пароля </label>
-      <input
-        id="register-confirm-password"
-        type="password"
-        name="registerConfirmPassword"
-        placeholder="Введите пароль снова"
-        [(ngModel)]="registerConfirmPassword"
-      />
-
-      <button type="submit">Зарегистрироваться</button>
-    </form>
-
-    <p>
-      Уже есть аккаунт?
-      <button type="button" class="switch-button" (click)="isLogin = true">Войти</button>
-    </p>
-  }
-</div>
+<main class="auth-page">
+  <section class="auth-card">
+    <div class="brand">Taskly</div>
+    @if (isLogin) {
+      <div class="auth-heading"><h1>Войти</h1><p>Продолжите работу со своими задачами</p></div>
+      <form class="auth-form" (ngSubmit)="onLogin()">
+        <label for="login">Логин</label>
+        <input id="login" type="text" name="login" placeholder="Введите логин" required minlength="3" [(ngModel)]="login" />
+        <label for="login-password">Пароль</label>
+        <input id="login-password" type="password" name="password" placeholder="Введите пароль" required minlength="6" [(ngModel)]="password" />
+        <button type="submit" class="primary-button">Войти</button>
+      </form>
+      <p class="switch-text">Нет аккаунта? <button type="button" class="switch-button" (click)="isLogin = false">Регистрация</button></p>
+    } @else {
+      <div class="auth-heading"><h1>Регистрация</h1><p>Создайте аккаунт, чтобы начать</p></div>
+      <form class="auth-form" (ngSubmit)="onRegister()">
+        <label for="register-login">Логин</label>
+        <input id="register-login" type="text" name="registerLogin" placeholder="Придумайте логин" required minlength="3" [(ngModel)]="registerLogin" />
+        <label for="register-password">Пароль</label>
+        <input id="register-password" type="password" name="registerPassword" placeholder="Придумайте пароль" required minlength="6" [(ngModel)]="registerPassword" />
+        <label for="register-confirm-password">Подтверждение пароля</label>
+        <input id="register-confirm-password" type="password" name="registerConfirmPassword" placeholder="Введите пароль снова" required minlength="6" [(ngModel)]="registerConfirmPassword" />
+        <button type="submit" class="primary-button">Зарегистрироваться</button>
+      </form>
+      <p class="switch-text">Уже есть аккаунт? <button type="button" class="switch-button" (click)="isLogin = true">Войти</button></p>
+    }
+  </section>
+</main>

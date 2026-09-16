@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using TasklyServer.DTOs;
 using TasklyServer.Interfaces;
 using TasklyServer.Models;
-using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
 
 namespace TasklyServer.Controllers
 {
@@ -45,18 +46,36 @@ namespace TasklyServer.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> Create(ToDoTask task)
+        public async Task<IActionResult> Create(CreateTaskDto dto)
         {
             var userId = GetUserId();
+
+            var task = new ToDoTask
+            {
+                Title = dto.Title,
+                Description = dto.Description,
+                IsCompleted = dto.IsCompleted,
+                CategoryId = dto.CategoryId
+            };
+
             var createdTask = await _taskService.CreateAsync(task, userId);
 
             return Ok(createdTask);
         }
 
         [HttpPut("update/{id}")]
-        public async Task<IActionResult> Update(int id, ToDoTask task)
+        public async Task<IActionResult> Update(int id, UpdateTaskDto dto)
         {
             var userId = GetUserId();
+
+            var task = new ToDoTask
+            {
+                Title = dto.Title,
+                Description = dto.Description,
+                IsCompleted = dto.IsCompleted,
+                CategoryId = dto.CategoryId
+            };
+
             var result = await _taskService.UpdateAsync(id, task, userId);
 
             if (!result)
