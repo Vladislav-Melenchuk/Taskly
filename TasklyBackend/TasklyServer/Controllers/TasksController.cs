@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using TasklyServer.Interfaces;
 using TasklyServer.Models;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace TasklyServer.Controllers
 {
@@ -20,7 +22,9 @@ namespace TasklyServer.Controllers
         [HttpGet("get")]
         public async Task<IActionResult> GetAll()
         {
-            var tasks = await _taskService.GetAllAsync();
+            var userId = GetUserId();
+
+            var tasks = await _taskService.GetAllAsync(userId);
 
             return Ok(tasks);
         }
@@ -28,7 +32,9 @@ namespace TasklyServer.Controllers
         [HttpGet("get/{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var task = await _taskService.GetByIdAsync(id);
+            var userId = GetUserId();
+
+            var task = await _taskService.GetByIdAsync(id, userId);
 
             if (task == null)
             {
@@ -41,7 +47,8 @@ namespace TasklyServer.Controllers
         [HttpPost("create")]
         public async Task<IActionResult> Create(ToDoTask task)
         {
-            var createdTask = await _taskService.CreateAsync(task);
+            var userId = GetUserId();
+            var createdTask = await _taskService.CreateAsync(task, userId);
 
             return Ok(createdTask);
         }
@@ -49,7 +56,8 @@ namespace TasklyServer.Controllers
         [HttpPut("update/{id}")]
         public async Task<IActionResult> Update(int id, ToDoTask task)
         {
-            var result = await _taskService.UpdateAsync(id, task);
+            var userId = GetUserId();
+            var result = await _taskService.UpdateAsync(id, task, userId);
 
             if (!result)
             {
@@ -62,7 +70,8 @@ namespace TasklyServer.Controllers
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var result = await _taskService.DeleteAsync(id);
+            var userId = GetUserId();
+            var result = await _taskService.DeleteAsync(id, userId);
 
             if (!result)
             {
@@ -70,6 +79,18 @@ namespace TasklyServer.Controllers
             }
 
             return Ok();
+        }
+
+        private int GetUserId()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userId == null)
+            {
+                throw new UnauthorizedAccessException();
+            }
+
+            return int.Parse(userId);
         }
     }
 }

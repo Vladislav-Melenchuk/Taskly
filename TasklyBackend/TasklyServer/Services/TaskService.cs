@@ -14,18 +14,28 @@ namespace TasklyServer.Services
             _context = context;
         }
 
-        public async Task<List<ToDoTask>> GetAllAsync()
+
+        public async Task<List<ToDoTask>> GetAllAsync(int userId)
         {
-            return await _context.Tasks.ToListAsync();
+            return await _context.Tasks
+                .Where(task => task.UserId == userId)
+                .ToListAsync();
         }
 
-        public async Task<ToDoTask?> GetByIdAsync(int id)
+
+        public async Task<ToDoTask?> GetByIdAsync(int id, int userId)
         {
-            return await _context.Tasks.FindAsync(id);
+            return await _context.Tasks
+                .FirstOrDefaultAsync(task =>
+                    task.Id == id &&
+                    task.UserId == userId);
         }
 
-        public async Task<ToDoTask> CreateAsync(ToDoTask task)
+
+        public async Task<ToDoTask> CreateAsync(ToDoTask task, int userId)
         {
+            task.UserId = userId;
+
             _context.Tasks.Add(task);
 
             await _context.SaveChangesAsync();
@@ -33,9 +43,16 @@ namespace TasklyServer.Services
             return task;
         }
 
-        public async Task<bool> UpdateAsync(int id, ToDoTask task)
+
+        public async Task<bool> UpdateAsync(
+            int id,
+            ToDoTask task,
+            int userId)
         {
-            var existingTask = await _context.Tasks.FindAsync(id);
+            var existingTask = await _context.Tasks
+                .FirstOrDefaultAsync(task =>
+                    task.Id == id &&
+                    task.UserId == userId);
 
             if (existingTask == null)
             {
@@ -45,15 +62,20 @@ namespace TasklyServer.Services
             existingTask.Title = task.Title;
             existingTask.Description = task.Description;
             existingTask.IsCompleted = task.IsCompleted;
+            existingTask.CategoryId = task.CategoryId;
 
             await _context.SaveChangesAsync();
 
             return true;
         }
 
-        public async Task<bool> DeleteAsync(int id)
+
+        public async Task<bool> DeleteAsync(int id, int userId)
         {
-            var task = await _context.Tasks.FindAsync(id);
+            var task = await _context.Tasks
+                .FirstOrDefaultAsync(task =>
+                    task.Id == id &&
+                    task.UserId == userId);
 
             if (task == null)
             {
