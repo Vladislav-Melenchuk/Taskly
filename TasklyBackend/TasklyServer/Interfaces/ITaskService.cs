@@ -4,7 +4,7 @@ namespace TasklyServer.Interfaces
 {
     public interface ITaskService
     {
-        Task<List<ToDoTask>> GetAllAsync(int userId);
+        Task<(List<ToDoTask> Items, int TotalCount)> GetAllAsync(int userId, int page, int pageSize, string? search, int? categoryId);
 
         Task<ToDoTask?> GetByIdAsync(int id, int userId);
 

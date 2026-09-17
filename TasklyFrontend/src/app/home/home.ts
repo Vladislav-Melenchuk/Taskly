@@ -12,13 +12,47 @@ import { AuthService } from '../services/auth';
   styleUrl: './home.css',
 })
 export class Home implements OnInit {
-  userLogin = localStorage.getItem('login');
+  userLogin = localStorage.getItem('token') ? localStorage.getItem('login') : null;
+  showAuthToast = false;
+  private authToastTimeout?: ReturnType<typeof setTimeout>;
 
   tasks: ToDoTask[] = [];
   categories: Category[] = [];
+  selectedTask: ToDoTask | null = null;
   editingTaskId: number | null = null;
   isTaskFormOpen = false;
+  isCategoryManagerOpen = false;
+  isCategoryFormVisible = false;
   newCategoryName = '';
+
+  get customCategories() {
+    return this.categories.filter((category) => !category.isDefault);
+  }
+
+  page = 1;
+  pageSize = 5;
+  totalPages = 0;
+
+  search = '';
+  filterCategoryId: number | null = null;
+
+  searchTasks() {
+    if (!this.requireAuthentication()) {
+      return;
+    }
+
+    this.page = 1;
+    this.loadTasks();
+  }
+
+  filterTasks() {
+    if (!this.requireAuthentication()) {
+      return;
+    }
+
+    this.page = 1;
+    this.loadTasks();
+  }
 
   constructor(
     private taskService: TaskService,
@@ -29,11 +63,17 @@ export class Home implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.loadTasks();
-    this.loadCategories();
+    if (this.authService.isAuthenticated()) {
+      this.loadTasks();
+      this.loadCategories();
+    }
   }
 
   createCategory() {
+    if (!this.requireAuthentication()) {
+      return;
+    }
+
     if (!this.newCategoryName.trim()) {
       return;
     }
@@ -53,7 +93,22 @@ export class Home implements OnInit {
     });
   }
 
+  deleteCategory(id: number) {
+    if (!this.requireAuthentication()) {
+      return;
+    }
+
+    this.categoryService.deleteCategory(id).subscribe({
+      next: () => this.loadCategories(),
+      error: (error) => console.log('Ошибка удаления категории:', error),
+    });
+  }
+
   loadCategories() {
+    if (!this.authService.isAuthenticated()) {
+      return;
+    }
+
     this.categoryService.getCategories().subscribe({
       next: (categories) => {
         this.categories = categories;
@@ -66,9 +121,17 @@ export class Home implements OnInit {
   }
 
   loadTasks() {
-    this.taskService.getTasks().subscribe({
-      next: (tasks) => {
-        this.tasks = tasks;
+    if (!this.authService.isAuthenticated()) {
+      return;
+    }
+
+    this.taskService.getTasks(this.page, this.pageSize, this.search, this.filterCategoryId).subscribe({
+      next: (response) => {
+        this.tasks = response.items;
+        this.totalPages = response.totalPages;
+
+        console.log('Ответ задач:', response);
+
         this.cdr.markForCheck();
       },
       error: (error) => {
@@ -77,12 +140,38 @@ export class Home implements OnInit {
     });
   }
 
+  nextPage() {
+    if (!this.requireAuthentication()) {
+      return;
+    }
+
+    if (this.page < this.totalPages) {
+      this.page++;
+      this.loadTasks();
+    }
+  }
+
+  previousPage() {
+    if (!this.requireAuthentication()) {
+      return;
+    }
+
+    if (this.page > 1) {
+      this.page--;
+      this.loadTasks();
+    }
+  }
+
   title = '';
   description = '';
   categoryId: number | null = null;
   isCompleted = false;
 
   createTask() {
+    if (!this.requireAuthentication()) {
+      return;
+    }
+
     const data = {
       title: this.title,
       description: this.description || null,
@@ -103,6 +192,10 @@ export class Home implements OnInit {
   }
 
   deleteTask(id: number) {
+    if (!this.requireAuthentication()) {
+      return;
+    }
+
     this.taskService.deleteTask(id).subscribe({
       next: () => {
         this.loadTasks();
@@ -113,7 +206,29 @@ export class Home implements OnInit {
     });
   }
 
+  openTaskDetails(id: number) {
+    if (!this.requireAuthentication()) {
+      return;
+    }
+
+    this.taskService.getTaskById(id).subscribe({
+      next: (task) => {
+        this.selectedTask = task;
+        this.cdr.markForCheck();
+      },
+      error: (error) => console.log('Ошибка получения задачи:', error),
+    });
+  }
+
+  closeTaskDetails() {
+    this.selectedTask = null;
+  }
+
   startEdit(task: ToDoTask) {
+    if (!this.requireAuthentication()) {
+      return;
+    }
+
     this.editingTaskId = task.id;
     this.isTaskFormOpen = true;
 
@@ -128,12 +243,30 @@ export class Home implements OnInit {
   }
 
   openCreateForm() {
+    if (!this.requireAuthentication()) {
+      return;
+    }
+
     this.editingTaskId = null;
     this.title = '';
     this.description = '';
     this.categoryId = null;
     this.isCompleted = false;
     this.isTaskFormOpen = true;
+  }
+
+  openCategoryManager() {
+    if (!this.requireAuthentication()) {
+      return;
+    }
+
+    this.isCategoryManagerOpen = true;
+  }
+
+  closeCategoryManager() {
+    this.isCategoryManagerOpen = false;
+    this.isCategoryFormVisible = false;
+    this.newCategoryName = '';
   }
 
   closeTaskForm() {
@@ -146,6 +279,10 @@ export class Home implements OnInit {
   }
 
   updateTask() {
+    if (!this.requireAuthentication()) {
+      return;
+    }
+
     if (this.editingTaskId === null) {
       return;
     }
@@ -170,6 +307,10 @@ export class Home implements OnInit {
   }
 
   toggleCompleted(task: ToDoTask) {
+    if (!this.requireAuthentication()) {
+      return;
+    }
+
     const data = {
       title: task.title,
       description: task.description,
@@ -196,6 +337,21 @@ export class Home implements OnInit {
     } else {
       this.updateTask();
     }
+  }
+
+  private requireAuthentication(): boolean {
+    if (this.authService.isAuthenticated()) {
+      return true;
+    }
+
+    this.showAuthToast = true;
+    clearTimeout(this.authToastTimeout);
+    this.authToastTimeout = setTimeout(() => {
+      this.showAuthToast = false;
+      this.cdr.markForCheck();
+    }, 3000);
+
+    return false;
   }
 
   logout() {

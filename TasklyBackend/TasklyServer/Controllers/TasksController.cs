@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TasklyServer.DTOs;
@@ -21,13 +20,28 @@ namespace TasklyServer.Controllers
         }
 
         [HttpGet("get")]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll(int page = 1, int pageSize = 10, string? search = null, int? categoryId = null)
         {
+            if (page < 1)
+                page = 1;
+
+            if (pageSize < 1)
+                pageSize = 10;
+
             var userId = GetUserId();
 
-            var tasks = await _taskService.GetAllAsync(userId);
+            var result = await _taskService.GetAllAsync(userId, page, pageSize, search, categoryId);
 
-            return Ok(tasks);
+            var totalPages = (int)Math.Ceiling((double)result.TotalCount / pageSize);
+
+            return Ok(new
+            {
+                items = result.Items,
+                page,
+                pageSize,
+                totalCount = result.TotalCount,
+                totalPages
+            });
         }
 
         [HttpGet("get/{id}")]

@@ -16,6 +16,14 @@ export interface CreateTaskRequest {
   categoryId: number | null;
 }
 
+export interface TasksResponse {
+  items: ToDoTask[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -24,8 +32,14 @@ export class TaskService {
 
   constructor(private http: HttpClient) {}
 
-  getTasks() {
-    return this.http.get<ToDoTask[]>(`${this.apiUrl}/get`);
+  getTasks(page: number, pageSize: number, search: string, categoryId: number | null) {
+    return this.http.get<TasksResponse>(
+      `${this.apiUrl}/get?page=${page}&pageSize=${pageSize}&search=${search}&categoryId=${categoryId !== null ? categoryId : ''}`,
+    );
+  }
+
+  getTaskById(id: number) {
+    return this.http.get<ToDoTask>(`${this.apiUrl}/get/${id}`);
   }
 
   createTask(data: CreateTaskRequest) {

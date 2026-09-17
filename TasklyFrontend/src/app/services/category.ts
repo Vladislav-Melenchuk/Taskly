@@ -25,4 +25,8 @@ export class CategoryService {
   createCategory(data: CreateCategoryRequest) {
     return this.http.post<Category>(`${this.apiUrl}/create`, data);
   }
+
+  deleteCategory(id: number) {
+    return this.http.delete(`${this.apiUrl}/delete/${id}`);
+  }
 }

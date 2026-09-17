@@ -18,8 +18,19 @@ export class Login {
   registerLogin = '';
   registerPassword = '';
   registerConfirmPassword = '';
+  loginSubmitted = false;
+  registerSubmitted = false;
+  loginError = '';
+  registerError = '';
 
   onLogin() {
+    this.loginSubmitted = true;
+    this.loginError = '';
+
+    if (!this.login.trim() || !this.password) {
+      return;
+    }
+
     const data = {
       login: this.login,
       password: this.password,
@@ -35,11 +46,23 @@ export class Login {
 
       error: (error) => {
         console.log('Ошибка входа:', error);
+        this.loginError = 'Неверный логин или пароль';
       },
     });
   }
 
   onRegister() {
+    this.registerSubmitted = true;
+    this.registerError = '';
+
+    if (!this.registerLogin.trim() || !this.registerPassword || !this.registerConfirmPassword) {
+      return;
+    }
+
+    if (this.registerPassword !== this.registerConfirmPassword) {
+      return;
+    }
+
     const data = {
       login: this.registerLogin,
       password: this.registerPassword,
@@ -59,6 +82,7 @@ export class Login {
             },
             error: (error) => {
               console.log('Ошибка автоматического входа:', error);
+              this.loginError = 'Регистрация завершена. Войдите в свой аккаунт';
               this.isLogin = true;
               this.login = response.login;
               this.password = '';
@@ -68,6 +92,7 @@ export class Login {
 
       error: (error) => {
         console.log('Ошибка регистрации:', error);
+        this.registerError = 'Не удалось зарегистрироваться. Проверьте данные';
       },
     });
   }

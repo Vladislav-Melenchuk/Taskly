@@ -38,6 +38,10 @@ export class AuthService {
     return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, data);
   }
 
+  isAuthenticated(): boolean {
+    return !!localStorage.getItem('token');
+  }
+
   logout() {
     return this.http.post(`${this.apiUrl}/logout`, {});
   }

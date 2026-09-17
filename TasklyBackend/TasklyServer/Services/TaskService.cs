@@ -15,11 +15,29 @@ namespace TasklyServer.Services
         }
 
 
-        public async Task<List<ToDoTask>> GetAllAsync(int userId)
+        public async Task<(List<ToDoTask> Items, int TotalCount)> GetAllAsync(int userId, int page, int pageSize, string? search, int? categoryId)
         {
-            return await _context.Tasks
-                .Where(task => task.UserId == userId)
+            var query = _context.Tasks.Where(task => task.UserId == userId);  
+            
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(task =>task.Title.Contains(search));
+            }
+
+            if (categoryId.HasValue)
+            {
+                query = query.Where(task => task.CategoryId == categoryId.Value);
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderBy(task => task.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
+
+            return (items, totalCount);
         }
 
 
