@@ -51,7 +51,7 @@ namespace TasklyServer.Controllers
             });
         }
 
-        [Authorize]
+      
         [HttpPost("logout")]
         public IActionResult Logout()
         {
