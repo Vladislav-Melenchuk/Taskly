@@ -1,0 +1,111 @@
+<main class="auth-page">
+  <section class="auth-card">
+    <div class="brand">Taskly</div>
+    @if (isLogin) {
+      <div class="auth-heading">
+        <h1>Войти</h1>
+        <p>Продолжите работу со своими задачами</p>
+      </div>
+      <form class="auth-form" (ngSubmit)="onLogin()">
+        <label for="login">Логин</label>
+        <input
+          id="login"
+          type="text"
+          name="login"
+          placeholder="Введите логин"
+          required
+          minlength="3"
+          [(ngModel)]="login"
+          [class.invalid]="loginSubmitted && !login.trim()"
+        />
+        @if (loginSubmitted && !login.trim()) {
+          <span class="field-error">Введите логин</span>
+        }
+        <label for="login-password">Пароль</label>
+        <input
+          id="login-password"
+          type="password"
+          name="password"
+          placeholder="Введите пароль"
+          required
+          minlength="6"
+          [(ngModel)]="password"
+          [class.invalid]="loginSubmitted && !password"
+        />
+        @if (loginSubmitted && !password) {
+          <span class="field-error">Введите пароль</span>
+        }
+        @if (loginError) {
+          <p class="form-error">{{ loginError }}</p>
+        }
+        <button type="submit" class="primary-button">Войти</button>
+      </form>
+      <p class="switch-text">
+        Нет аккаунта?
+        <button type="button" class="switch-button" (click)="isLogin = false">Регистрация</button>
+      </p>
+    } @else {
+      <div class="auth-heading">
+        <h1>Регистрация</h1>
+        <p>Создайте аккаунт, чтобы начать</p>
+      </div>
+      <form class="auth-form" (ngSubmit)="onRegister()">
+        <label for="register-login">Логин</label>
+        <input
+          id="register-login"
+          type="text"
+          name="registerLogin"
+          placeholder="Придумайте логин"
+          required
+          minlength="3"
+          [(ngModel)]="registerLogin"
+          [class.invalid]="registerSubmitted && !registerLogin.trim()"
+        />
+        @if (registerSubmitted && !registerLogin.trim()) {
+          <span class="field-error">Введите логин</span>
+        }
+        <label for="register-password">Пароль</label>
+        <input
+          id="register-password"
+          type="password"
+          name="registerPassword"
+          placeholder="Придумайте пароль"
+          required
+          minlength="6"
+          [(ngModel)]="registerPassword"
+          [class.invalid]="registerSubmitted && !registerPassword"
+        />
+        @if (registerSubmitted && !registerPassword) {
+          <span class="field-error">Введите пароль</span>
+        }
+        <label for="register-confirm-password">Подтверждение пароля</label>
+        <input
+          id="register-confirm-password"
+          type="password"
+          name="registerConfirmPassword"
+          placeholder="Введите пароль снова"
+          required
+          minlength="6"
+          [(ngModel)]="registerConfirmPassword"
+          [class.invalid]="
+            registerSubmitted &&
+            (!registerConfirmPassword || registerPassword !== registerConfirmPassword)
+          "
+        />
+        @if (registerSubmitted && !registerConfirmPassword) {
+          <span class="field-error">Подтвердите пароль</span>
+        } @else if (registerSubmitted && registerPassword !== registerConfirmPassword) {
+          <span class="field-error">Пароли не совпадают</span>
+        }
+        @if (registerError) {
+          <p class="form-error">{{ registerError }}</p>
+        }
+        <button type="submit" class="primary-button">Зарегистрироваться</button>
+      </form>
+      <p class="switch-text">
+        Уже есть аккаунт?
+        <button type="button" class="switch-button" (click)="isLogin = true">Войти</button>
+      </p>
+    }
+  </section>
+</main>

@@ -1,0 +1,223 @@
+<header class="app-header">
+  <div class="header-inner">
+    <a class="brand" routerLink="/" aria-label="Taskly — главная">
+      <span class="brand-mark" aria-hidden="true">T</span><span>Taskly</span>
+    </a>
+    @if (userLogin) {
+      <div class="user-area">
+        <span class="user-login">{{ userLogin }}</span>
+        <button type="button" class="icon-button logout-button" (click)="logout()" title="Выйти" aria-label="Выйти">
+          <img src="/log-out.svg" alt="" aria-hidden="true" />
+        </button>
+      </div>
+    } @else {
+      <button class="secondary-button login-button" routerLink="/login">Войти</button>
+    }
+  </div>
+</header>
+
+<main class="main">
+  <section class="workspace" aria-labelledby="page-title">
+    <div class="page-heading">
+      <div>
+        <p class="eyebrow">Рабочий список</p>
+        <h1 id="page-title">Мои задачи</h1>
+      </div>
+      <div class="heading-actions">
+        <span class="task-count">{{ tasks.length }} задач</span>
+        <button type="button" class="secondary-button category-manager-button" (click)="openCategoryManager()">
+          <img src="/label.svg" alt="" aria-hidden="true" />
+          Категории
+        </button>
+        <button type="button" class="primary-button add-button" (click)="openCreateForm()">
+          <img src="/plus-circle.svg" alt="" aria-hidden="true" />
+          Добавить задачу
+        </button>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <form class="search-form" (ngSubmit)="searchTasks()">
+        <label class="search-field">
+          <span class="sr-only">Поиск задач</span>
+          <input type="search" name="search" placeholder="Поиск задач..." [(ngModel)]="search" />
+        </label>
+        <label class="filter-field">
+          <span class="sr-only">Фильтр по категории</span>
+          <img src="/filter-solid.svg" alt="" aria-hidden="true" />
+          <select name="filterCategoryId" [(ngModel)]="filterCategoryId" (change)="filterTasks()">
+            <option [ngValue]="null">Все категории</option>
+            @for (category of categories; track category.id) {
+              <option [ngValue]="category.id">{{ category.name }}</option>
+            }
+          </select>
+        </label>
+        <button type="submit" class="primary-button search-button">Найти</button>
+      </form>
+    </div>
+
+    <section class="task-list" aria-label="Список задач">
+      @for (task of tasks; track task.id) {
+        <article class="task-card" [class.completed]="task.isCompleted">
+          <label class="checkbox-wrap" [title]="task.isCompleted ? 'Вернуть в работу' : 'Отметить выполненной'">
+            <input type="checkbox" [checked]="task.isCompleted" (change)="toggleCompleted(task)" />
+            <span class="custom-checkbox" aria-hidden="true"></span>
+            <span class="sr-only">Изменить статус задачи</span>
+          </label>
+          <div class="task-content">
+            <h3>{{ task.title }}</h3>
+            @if (task.description) { <p>{{ task.description }}</p> }
+            @if (task.categoryId !== null) {
+              @for (category of categories; track category.id) {
+                @if (category.id === task.categoryId) { <span class="category">{{ category.name }}</span> }
+              }
+            }
+          </div>
+          <div class="task-actions">
+            <button type="button" class="action-button details-button" (click)="openTaskDetails(task.id)" title="Просмотреть задачу" aria-label="Просмотреть задачу">
+              <img src="/label.svg" alt="" aria-hidden="true" />
+            </button>
+            <button type="button" class="action-button" (click)="startEdit(task)">Изменить</button>
+            <button type="button" class="action-button delete-button" (click)="deleteTask(task.id)">
+              <img src="/trash-solid.svg" alt="" aria-hidden="true" /><span>Удалить</span>
+            </button>
+          </div>
+        </article>
+      } @empty {
+        <div class="empty-state">
+          <h3>Задач пока нет</h3>
+          <p>Нажмите «Добавить задачу», чтобы создать первую.</p>
+        </div>
+      }
+    </section>
+
+    @if (totalPages > 1) {
+      <nav class="pagination" aria-label="Навигация по страницам">
+        <button type="button" (click)="previousPage()" [disabled]="page === 1">
+          <img src="/arrow-left-circle-solid.svg" alt="" aria-hidden="true" /><span>Назад</span>
+        </button>
+        <span class="page-indicator"><strong>{{ page }}</strong> из {{ totalPages }}</span>
+        <button type="button" (click)="nextPage()" [disabled]="page === totalPages">
+          <span>Вперёд</span><img src="/arrow-right-circle-solid.svg" alt="" aria-hidden="true" />
+        </button>
+      </nav>
+    }
+
+  </section>
+</main>
+
+@if (selectedTask) {
+  <div class="modal-backdrop" role="presentation">
+    <section class="task-modal details-modal" role="dialog" aria-modal="true" aria-labelledby="details-title">
+      <div class="form-heading">
+        <div>
+          <span class="mode-label">Просмотр задачи</span>
+          <h2 id="details-title">{{ selectedTask.title }}</h2>
+        </div>
+        <button type="button" class="icon-button close-button" (click)="closeTaskDetails()" aria-label="Закрыть">
+          <img src="/xmark-circle.svg" alt="" aria-hidden="true" />
+        </button>
+      </div>
+      <div class="details-body">
+        <div class="details-row">
+          <span class="details-label">Описание</span>
+          <p>{{ selectedTask.description || 'Описание не указано' }}</p>
+        </div>
+        <div class="details-meta">
+          <div>
+            <span class="details-label">Категория</span>
+            @if (selectedTask.categoryId === null) {
+              <span>Без категории</span>
+            } @else {
+              @for (category of categories; track category.id) {
+                @if (category.id === selectedTask.categoryId) { <span class="category">{{ category.name }}</span> }
+              }
+            }
+          </div>
+          <div>
+            <span class="details-label">Статус</span>
+            <span>{{ selectedTask.isCompleted ? 'Выполнена' : 'В работе' }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+}
+
+@if (isCategoryManagerOpen) {
+  <div class="modal-backdrop" role="presentation">
+    <section class="task-modal category-modal" role="dialog" aria-modal="true" aria-labelledby="categories-title">
+      <div class="form-heading">
+        <h2 id="categories-title">Мои категории</h2>
+        <button type="button" class="icon-button close-button" (click)="closeCategoryManager()" aria-label="Закрыть">
+          <img src="/xmark-circle.svg" alt="" aria-hidden="true" />
+        </button>
+      </div>
+
+      <div class="category-list">
+        @for (category of customCategories; track category.id) {
+          <div class="category-item">
+            <span>{{ category.name }}</span>
+            <button type="button" class="icon-button category-delete-button" (click)="deleteCategory(category.id)" title="Удалить категорию" aria-label="Удалить категорию">
+              <img src="/trash-solid.svg" alt="" aria-hidden="true" />
+            </button>
+          </div>
+        } @empty {
+          <p class="categories-empty">У вас пока нет своих категорий</p>
+        }
+      </div>
+
+      @if (isCategoryFormVisible) {
+        <form class="category-form" (ngSubmit)="createCategory()">
+          <input type="text" name="newCategoryName" placeholder="Название категории" aria-label="Название новой категории" required minlength="2" [(ngModel)]="newCategoryName" />
+          <button type="submit" class="primary-button">Добавить</button>
+        </form>
+      } @else {
+        <button type="button" class="secondary-button show-category-form" (click)="isCategoryFormVisible = true">+ Добавить категорию</button>
+      }
+    </section>
+  </div>
+}
+
+@if (isTaskFormOpen) {
+  <div class="modal-backdrop" role="presentation">
+    <section class="task-modal" role="dialog" aria-modal="true" aria-labelledby="task-modal-title">
+      <div class="form-heading">
+        <div>
+          <span class="mode-label">{{ editingTaskId === null ? 'Новая задача' : 'Редактирование' }}</span>
+          <h2 id="task-modal-title">{{ editingTaskId === null ? 'Добавить задачу' : 'Изменить задачу' }}</h2>
+        </div>
+        <button type="button" class="icon-button close-button" (click)="closeTaskForm()" aria-label="Закрыть">
+          <img src="/xmark-circle.svg" alt="" aria-hidden="true" />
+        </button>
+      </div>
+      <form class="task-form" (ngSubmit)="saveTask()">
+        <div class="field">
+          <label for="task-title">Название</label>
+          <input id="task-title" type="text" name="title" placeholder="Например, подготовить отчёт" [(ngModel)]="title" />
+        </div>
+        <div class="field">
+          <label for="task-description">Описание</label>
+          <input id="task-description" type="text" name="description" placeholder="Короткое описание задачи" [(ngModel)]="description" />
+        </div>
+        <div class="field">
+          <label for="category">Категория</label>
+          <select id="category" name="categoryId" [(ngModel)]="categoryId">
+            <option [ngValue]="null">Без категории</option>
+            @for (category of categories; track category.id) { <option [ngValue]="category.id">{{ category.name }}</option> }
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="secondary-button" (click)="closeTaskForm()">Отменить</button>
+          <button type="submit" class="primary-button">{{ editingTaskId === null ? 'Создать' : 'Сохранить' }}</button>
+        </div>
+      </form>
+    </section>
+  </div>
+}
+
+@if (showAuthToast) {
+  <div class="auth-toast" role="status" aria-live="polite">
+    Войдите или зарегистрируйтесь, чтобы пользоваться всеми функциями Taskly
+  </div>
+}
